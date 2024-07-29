@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Lint",
+            "type": "shell",
+            "command": "python3 -m ruff check",
+            "problemMatcher": []
+        }
+    ]
+}
