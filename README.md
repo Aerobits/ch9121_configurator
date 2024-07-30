@@ -39,40 +39,21 @@ Since all values must be supplied while programming, the config should be downlo
 modified, and then reprogrammed.
 
 ```yaml
-HW Config:
+HW config:
   DHCP Enable: false
   Device Gateway IP: 192.168.1.1
-  Device IP: 192.168.1.17
+  Device IP: 192.168.1.200
   Device IP Mask: 255.255.255.0
-  Device MAC: 50547bb50e56 # in hexadecimal format without separators
-  Device subtype: 33 # read only
-  Device type: 33 # read only
-  Hardware version: 2 # read only
-  Module name: 'CH9121 ' # up to 21 characters
-  Serial number: 1 # read only
+  Device MAC: 50547bb50e55
+  Device subtype: 33
+  Device type: 33
+  Hardware version: 2
+  Module name: 'CH9121 '
+  Serial number: 1
   Serial port negotiation configuration enable: false
-  Software version: 6 # read only
-Port 1 Config:
-  Baudrate: 9600 # 300---921600 bps
-  Clear RX data buffer on connection enable: false
-  DNS Enable: false
-  Data size: 8 # 5 - 8 bits
-  Destination IP: 192.168.1.100
-  Destination port: 2000
-  Domain name: '' # ignored when DNS not enabled
-  Local port number: 3000
-  Netmode: 2 # 0: TCP SERVER; 1: TCP CLENT; 2: UDP SERVER 3: UDP CLIENT
-  PHY Change Handle Enable: true
-  Parity: 4 # 4 means no parity, 0 means odd parity;
-  #  1 means even parity; 2 means mark bit
-  Port Enable: false
-  Port subdevice serial number: 0
-  RX Packet Max Length: 1024 # 1024 max
-  RX Timeout: 0 # Max time to wait for packets before sending. Units of 10 ms
-  Random local port enable: true
-  Stop bits: 1 #0 means 1 stop bit; 1 means 1.5 stop bits; 2 means 2 stop bits
-Port 2 Config:
-  Baudrate: 115200
+  Software version: 6
+Default port config:
+  Baudrate: 9600
   Clear RX data buffer on connection enable: false
   DNS Enable: false
   Data size: 8
@@ -80,13 +61,31 @@ Port 2 Config:
   Destination port: 1000
   Domain name: ''
   Local port number: 2000
-  Netmode: 0
+  Netmode: 1
   PHY Change Handle Enable: true
   Parity: 4
   Port Enable: true
   Port subdevice serial number: 1
   RX Packet Max Length: 1024
   RX Timeout: 0
-  Random local port enable: false
+  Random local port enable: true
+  Stop bits: 1
+Auxiliary port config:
+  Baudrate: 9600
+  Clear RX data buffer on connection enable: false
+  DNS Enable: false
+  Data size: 8
+  Destination IP: 192.168.1.100
+  Destination port: 2000
+  Domain name: ''
+  Local port number: 3000
+  Netmode: 2
+  PHY Change Handle Enable: true
+  Parity: 4
+  Port Enable: false
+  Port subdevice serial number: 0
+  RX Packet Max Length: 1024
+  RX Timeout: 0
+  Random local port enable: true
   Stop bits: 1
 ```

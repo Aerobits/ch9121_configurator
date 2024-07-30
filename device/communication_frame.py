@@ -160,16 +160,16 @@ def deserialize_config(data_bytes):
         'DNS Enable': bool(dns_flag),
         'Domain name': domain_name.decode().rstrip('\x00')
     }
-    config = {'HW Config': hw_config,
-              'Port 1 Config': port_1_cfg,
-              'Port 2 Config': port_2_cfg}
+    config = {'HW config': hw_config,
+              'Default port config': port_2_cfg,
+              'Auxiliary port config': port_1_cfg}
     return config
 
 def serialize_config(config):
     # serialize DEVICEHW_CONFIG
     
     # read_only parameters
-    hw_config = config['HW Config']
+    hw_config = config['HW config']
     dev_type = hw_config['Device type']
     aux_dev_type = hw_config['Device subtype']
     sn = hw_config['Serial number']
@@ -195,7 +195,7 @@ def serialize_config(config):
     # serialize DEVICEPORT_CONFIG
     # note: ULONG is 4 bytes wide
     serialization_format = "BBBBH4sHiBBBBiiBBB20s14s"
-    port_1_config = config['Port 1 Config']
+    port_1_config = config['Auxiliary port config']
     subdev_serial = port_1_config['Port subdevice serial number']
     port_en = port_1_config['Port Enable']
     netmode = port_1_config['Netmode']
@@ -219,7 +219,7 @@ def serialize_config(config):
         baud, data_size, stop_bits, parity, phy_handle, rx_packet_length, rx_timeout, reserved_1, reset_ctl,\
         dns_flag, domain_name, reserved)
 
-    port_2_config = config['Port 2 Config']
+    port_2_config = config['Default port config']
     subdev_serial = port_2_config['Port subdevice serial number']
     port_en = port_2_config['Port Enable']
     netmode = port_2_config['Netmode']
