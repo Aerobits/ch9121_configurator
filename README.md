@@ -38,6 +38,11 @@ The device allows for reprogramming of read-only parameters and does not restore
 Since all values must be supplied while programming, the config should be downloaded from the device,
 modified, and then reprogrammed.
 
+Also see [the example configuration file](example.yaml).
+Note: since read-only parameters still need to be supplied and programmed to the device
+(and, despite the name, can be overwritten), the user should download the factory configuration
+from the device as base and treat the example as reference only.
+
 ```yaml
 HW config:
   DHCP Enable: false
