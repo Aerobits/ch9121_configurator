@@ -38,10 +38,25 @@ The device allows for reprogramming of read-only parameters and does not restore
 Since all values must be supplied while programming, the config should be downloaded from the device,
 modified, and then reprogrammed.
 
-Also see [the example configuration file](example.yaml).
-Note: since read-only parameters still need to be supplied and programmed to the device
-(and, despite the name, can be overwritten), the user should download the factory configuration
-from the device as base and treat the example as reference only.
+#### Config parameters descriptions
+
+| Parameter 	| Description 	| Accepted values 	|
+|---	|---	|---	|
+| Device MAC 	| In hexadecimal format, without separators 	| N/A 	|
+| Device subtype 	| Read only 	| N/A 	|
+| Device type 	| Read only 	| N/A 	|
+| Module name 	| Up to 21 characters 	| ASCII strings up to 21 characters 	|
+| Serial number 	| Read only 	| N/A 	|
+| Baudrate 	| UART Baud	| 300 - 921600 bps 	|
+| Data size 	| UART Data size	| 5 - 8 bits 	|
+| Domain name 	| Ignored when DNS not enabled 	| N/A 	|
+| Netmode 	| Enumeration 	| 0 - TCP Server<br>1 - TCP Client<br>2 - UDP Server<br>3 - UDP Client 	|
+| Parity 	| Enumeration 	| 0 - odd parity<br>1 - even parity<br>2 - mark bit<br>3 - no parity 	|
+| RX Packet Max Length 	| Max packet / buffer size | up to 1024 	|
+| RX Timeout 	| Max time to wait before sending buffered data. Units of 10s of ms. 	| N/A 	|
+| Stop bits 	| Enumeration 	| 0 - 1 stop bit<br>2 - 1.5 stop bits<br>2 - 2 stop bits 	|
+
+#### YAML File Example
 
 ```yaml
 HW config:
