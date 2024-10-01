@@ -64,32 +64,32 @@ HW config:
   Device Gateway IP: 192.168.1.1
   Device IP: 192.168.1.200
   Device IP Mask: 255.255.255.0
-  Device MAC: 50547bb50e55 # in hexadecimal format without separators
-  Device subtype: 33 # read only
-  Device type: 33 # read only
-  Hardware version: 2 # read only
-  Module name: "CH9121 " # up to 21 characters
-  Serial number: 1 # read only
+  Device MAC: 50547bb50e55 
+  Device subtype: 33
+  Device type: 33
+  Hardware version: 2
+  Module name: "CH9121 "
+  Serial number: 1
   Serial port negotiation configuration enable: false
   Software version: 6
 Default port config:
-  Baudrate: 9600 # 300 - 921600 bps
+  Baudrate: 9600
   Clear RX data buffer on connection enable: false
   DNS Enable: false
-  Data size: 8 # 5 - 8 bits
+  Data size: 8
   Destination IP: 192.168.1.100
   Destination port: 1000
-  Domain name: "" # ignored when DNS not enabled
+  Domain name: ""
   Local port number: 2000
-  Netmode: 1 # 0 - TCP Server 1 - TCP Client 2 - UDP Server 3 - UDP Client
+  Netmode: 1
   PHY Change Handle Enable: true
-  Parity: 4 # 0 - odd parity 1 - even parity 2 - mark bit 4 - no parity
+  Parity: 4
   Port Enable: true
   Port subdevice serial number: 1
-  RX Packet Max Length: 1024 # up to 1024
-  RX Timeout: 0 # max time to wait before sending buffered packets. Units of 10 ms
+  RX Packet Max Length: 1024
+  RX Timeout: 0
   Random local port enable: true
-  Stop bits: 1 # 0 - 1 stop bit 2 - 1.5 stop bits 2 - 2 stop bits
+  Stop bits: 1
 Auxiliary port config:
   Baudrate: 9600
   Clear RX data buffer on connection enable: false
