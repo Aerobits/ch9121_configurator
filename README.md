@@ -10,7 +10,7 @@ sends replies to broadcast address to port 60000.
 ## Usage
 
 ```cmd
-$ python ch9121.py --help 
+$ python ch9121.py --help
 usage: CH9121 Programmer [-h] [-s] [-g] [--set] [-r] [-if INPUT_FILE] [-of OUTPUT_FILE] [-i INTERFACE] [-m MAC] [-b BROADCAST]
 
 Multiple actions may be specified and performed, in the order specified below.
@@ -38,17 +38,37 @@ The device allows for reprogramming of read-only parameters and does not restore
 Since all values must be supplied while programming, the config should be downloaded from the device,
 modified, and then reprogrammed.
 
+#### Config parameters descriptions
+
+| Parameter 	| Description 	| Accepted values 	|
+|---	|---	|---	|
+| Device MAC 	| In hexadecimal format, without separators 	| N/A 	|
+| Device subtype 	| Read only 	| N/A 	|
+| Device type 	| Read only 	| N/A 	|
+| Module name 	| Up to 21 characters 	| ASCII strings up to 21 characters 	|
+| Serial number 	| Read only 	| N/A 	|
+| Baudrate 	| UART Baud	| 300 - 921600 bps 	|
+| Data size 	| UART Data size	| 5 - 8 bits 	|
+| Domain name 	| Ignored when DNS not enabled 	| N/A 	|
+| Netmode 	| Enumeration 	| 0 - TCP Server<br>1 - TCP Client<br>2 - UDP Server<br>3 - UDP Client 	|
+| Parity 	| Enumeration 	| 0 - odd parity<br>1 - even parity<br>2 - mark bit<br>3 - no parity 	|
+| RX Packet Max Length 	| Max packet / buffer size | up to 1024 	|
+| RX Timeout 	| Max time to wait before sending buffered data. Units of 10s of ms. 	| N/A 	|
+| Stop bits 	| Enumeration 	| 0 - 1 stop bit<br>2 - 1.5 stop bits<br>2 - 2 stop bits 	|
+
+#### YAML File Example
+
 ```yaml
 HW config:
   DHCP Enable: false
   Device Gateway IP: 192.168.1.1
   Device IP: 192.168.1.200
   Device IP Mask: 255.255.255.0
-  Device MAC: 50547bb50e55
+  Device MAC: 50547bb50e55 
   Device subtype: 33
   Device type: 33
   Hardware version: 2
-  Module name: 'CH9121 '
+  Module name: "CH9121 "
   Serial number: 1
   Serial port negotiation configuration enable: false
   Software version: 6
@@ -59,7 +79,7 @@ Default port config:
   Data size: 8
   Destination IP: 192.168.1.100
   Destination port: 1000
-  Domain name: ''
+  Domain name: ""
   Local port number: 2000
   Netmode: 1
   PHY Change Handle Enable: true
@@ -77,7 +97,7 @@ Auxiliary port config:
   Data size: 8
   Destination IP: 192.168.1.100
   Destination port: 2000
-  Domain name: ''
+  Domain name: ""
   Local port number: 3000
   Netmode: 2
   PHY Change Handle Enable: true
