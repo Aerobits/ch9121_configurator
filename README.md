@@ -51,7 +51,7 @@ modified, and then reprogrammed.
 | Data size 	| UART Data size	| 5 - 8 bits 	|
 | Domain name 	| Ignored when DNS not enabled 	| N/A 	|
 | Netmode 	| Enumeration 	| 0 - TCP Server<br>1 - TCP Client<br>2 - UDP Server<br>3 - UDP Client 	|
-| Parity 	| Enumeration 	| 0 - odd parity<br>1 - even parity<br>2 - mark bit<br>3 - no parity 	|
+| Parity 	| Enumeration 	| 0 - odd parity<br>1 - even parity<br>2 - mark bit<br>4 - no parity 	|
 | RX Packet Max Length 	| Max packet / buffer size | up to 1024 	|
 | RX Timeout 	| Max time to wait before sending buffered data. Units of 10s of ms. 	| N/A 	|
 | Stop bits 	| Enumeration 	| 0 - 1 stop bit<br>2 - 1.5 stop bits<br>2 - 2 stop bits 	|
