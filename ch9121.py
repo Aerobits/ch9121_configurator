@@ -13,20 +13,22 @@ parser = argparse.ArgumentParser(
     " in the order specified below.",
 )
 parser.add_argument(
-    "-s", "--search", default=False, action="store_true", help="Search for device"
+    "-f", "--find", default=False, action="store_true", help="Search for device"
 )
 parser.add_argument(
     "-g",
     "--get",
-    default=False,
-    action="store_true",
-    help="Download device configuration. " "Save to file specified by --output-file",
+    default=None,
+    help="Download device configuration. Follow this argument by a filename to save the configuration to",
+    metavar="Configuration output filename",
 )
 parser.add_argument(
+    "-s",
     "--set",
-    default=False,
-    action="store_true",
-    help="Program device with specified configuration. " "Specify --input-file",
+    default=None,
+    help="Program device with specified configuration. "
+    "Follow this argument by a filename to source the configuration from",
+    metavar="Configuration input filename",
 )
 parser.add_argument(
     "-r",
@@ -34,15 +36,6 @@ parser.add_argument(
     default=False,
     action="store_true",
     help="Restore device to factory settings",
-)
-parser.add_argument(
-    "-if", "--input-file", default=None, help="Configuration input file"
-)
-parser.add_argument(
-    "-of",
-    "--output-file",
-    default="config-saved.yaml",
-    help="Configuration output file. Defaults to config-saved.yaml",
 )
 parser.add_argument(
     "-i",
@@ -67,6 +60,10 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+if not (args.find or args.get or args.reset or args.set):
+    parser.print_help()
+    exit(1)
+
 broadcast = (
     args.broadcast
     if args.broadcast is not None
@@ -78,10 +75,7 @@ target_mac = (
     int(args.mac, 16).to_bytes(6, byteorder="big") if args.mac is not None else None
 )
 
-if not (args.search or args.get or args.reset or args.set):
-    parser.print_help()
-
-if args.search:
+if args.find:
     print("Searching")
     module_macs = module.search()
 
@@ -104,7 +98,7 @@ if args.get:
         exit(1)
     print(f"Asking {target_mac.hex()} for its configuration")
     config = module.get_config(module_mac=target_mac)
-    store_config.config_save(config, args.output_file)
+    store_config.config_save(config, args.get)
 
 if args.set:
     if target_mac is None:
@@ -113,8 +107,18 @@ if args.set:
     if args.input_file is None:
         print("Set was specified but no configuration file was selected")
         exit(1)
-    print(f"Sending configuration specified in {args.input_file} to {target_mac.hex()}")
-    config = store_config.config_load(args.input_file)
+
+    answer = ""
+    while answer not in ["y", "n"]:
+        answer = input(
+            f"Programming the configuration from {args.set} to the device. Ok? [y/n]"
+        )
+
+    if answer == "n":
+        exit(1)
+
+    print(f"Sending configuration specified in {args.set} to {target_mac.hex()}")
+    config = store_config.config_load(args.set)
     config["Device MAC"] = target_mac
     module.set_config(config, module_mac=target_mac)
 
@@ -122,5 +126,13 @@ if args.reset:
     if target_mac is None:
         print("No target MAC specified and no available devices found.")
         exit(1)
+
+    answer = ""
+    while answer not in ["y", "n"]:
+        answer = input("Reseting the device to factory settings. Ok? [y/n]")
+
+    if answer == "n":
+        exit(1)
+
     print(f"Asking {target_mac.hex()} to revert to factory settings.")
     module.reset_to_factory_settings(module_mac=target_mac)

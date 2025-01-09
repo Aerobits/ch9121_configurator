@@ -56,7 +56,7 @@ class CH9121:
             response = self.socket_receive.recv(
                 protocol.message_size * self.search_max_devices
             )
-        except TimeoutError:
+        except (TimeoutError, socket.timeout):
             response = None
         responses_count = (
             int(len(response) / protocol.message_size) if response is not None else 0
