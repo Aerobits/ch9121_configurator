@@ -83,7 +83,7 @@ class CH9121:
         t.start()
         try:
             response = self.socket_receive.recv(protocol.message_size)
-        except TimeoutError:
+        except (TimeoutError, socket.timeout):
             print("Timed out waiting for a get response packet. Terminating")
             exit(1)
         command_header, ch9121_mac, pc_mac, data_area_len, data = (
@@ -118,7 +118,7 @@ class CH9121:
             else:
                 print("Return command header unknown")
                 exit(1)
-        except TimeoutError:
+        except (TimeoutError, socket.timeout):
             print("Timed out waiting for response. Terminating")
             exit(1)
         t.join()
@@ -138,6 +138,6 @@ class CH9121:
                 print("Device responded with ACK")
             else:
                 print("Return command header unknown")
-        except TimeoutError:
+        except (TimeoutError, socket.timeout):
             print("Timed out waiting for response")
         t.join()

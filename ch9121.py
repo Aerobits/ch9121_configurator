@@ -104,14 +104,11 @@ if args.set:
     if target_mac is None:
         print("No target MAC specified and no available devices found.")
         exit(1)
-    if args.input_file is None:
-        print("Set was specified but no configuration file was selected")
-        exit(1)
 
     answer = ""
     while answer not in ["y", "n"]:
         answer = input(
-            f"Programming the configuration from {args.set} to the device. Ok? [y/n]"
+            f"Programming the configuration from {args.set} to the device. Ok? [y/n] "
         )
 
     if answer == "n":
@@ -129,7 +126,9 @@ if args.reset:
 
     answer = ""
     while answer not in ["y", "n"]:
-        answer = input("Reseting the device to factory settings. Ok? [y/n]")
+        answer = input(
+            f"Reseting the {target_mac.hex()} to factory settings. Ok? [y/n] "
+        )
 
     if answer == "n":
         exit(1)
