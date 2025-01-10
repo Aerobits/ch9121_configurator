@@ -2,38 +2,58 @@ import struct
 from . import protocol
 import ipaddress
 
+
 def search_frame():
-    return serialize(command=protocol.Commands.SEARCH, module_mac=bytes.fromhex('0' * 12))
+    return serialize(
+        command=protocol.Commands.SEARCH, module_mac=bytes.fromhex("0" * 12)
+    )
+
 
 def get_frame(module_mac=None):
     return serialize(command=protocol.Commands.GET, module_mac=module_mac)
 
+
 def set_frame(config, module_mac=None):
-    return serialize(command=protocol.Commands.SET, module_mac=module_mac, payload=serialize_config(config))
+    return serialize(
+        command=protocol.Commands.SET,
+        module_mac=module_mac,
+        payload=serialize_config(config),
+    )
+
 
 def reset_frame(module_mac=None):
     return serialize(command=protocol.Commands.RESET_TO_FACTORY, module_mac=module_mac)
-        
+
+
 def deserialize_header(bytes_buffer):
     deserialize_format = "16sB6s6sB"
-    comm_flag, command_header, ch9121_mac, pc_mac, data_area_len = struct.unpack(deserialize_format, bytes_buffer[:30])
+    comm_flag, command_header, ch9121_mac, pc_mac, data_area_len = struct.unpack(
+        deserialize_format, bytes_buffer[:30]
+    )
     data = bytes_buffer[30 : 30 + data_area_len]
     return command_header, ch9121_mac, pc_mac, data_area_len, data
 
-def serialize(command: protocol.Commands, module_mac=bytes.fromhex(12 * 'f'), pc_mac=bytes.fromhex(12 * '0'), payload=None): 
+
+def serialize(
+    command: protocol.Commands,
+    module_mac=bytes.fromhex(12 * "f"),
+    pc_mac=bytes.fromhex(12 * "0"),
+    payload=None,
+):
     length = len(payload) if payload is not None else 0
-    serialize_format = 'B6s6sB'
+    serialize_format = "B6s6sB"
     if payload is None:
-        payload = bytes.fromhex(protocol.payload_size * 2 * '0')
+        payload = bytes.fromhex(protocol.payload_size * 2 * "0")
     elif len(payload) < protocol.payload_size:
         pad_amount = protocol.payload_size - len(payload)
-        payload += bytes.fromhex(2 * pad_amount * '0')
+        payload += bytes.fromhex(2 * pad_amount * "0")
     elif len(payload) > protocol.payload_size:
-        raise ValueError('Message data section too long')    
+        raise ValueError("Message data section too long")
     header = struct.pack(serialize_format, command.value, module_mac, pc_mac, length)
 
     message = protocol.preamble + header + payload
     return message
+
 
 def deserialize_config(data_bytes):
     """
@@ -60,33 +80,57 @@ def deserialize_config(data_bytes):
     };
     """
     # deserialize DEVICEHW_CONFIG
-    deserialization_format = 'BBBBB21s6s4s4s4sBBB8sB8sBB8s'
-    device_hw_config = data_bytes[:protocol.device_hw_config_size]
-    dev_type, aux_dev_type, sn, hardware_ver, software_ver,\
-    module_name, dev_mac, dev_ip, dev_gateway_ip, dev_ip_mask,\
-    dhcp_enable, reserved_1, reserved_1a, reserved_2, reserved_3, reserved_4,\
-    reserved_5, b_com_cfg_en, reserved_6 = struct.unpack(deserialization_format, device_hw_config)
+    deserialization_format = "BBBBB21s6s4s4s4sBBB8sB8sBB8s"
+    device_hw_config = data_bytes[: protocol.device_hw_config_size]
+    (
+        dev_type,
+        aux_dev_type,
+        sn,
+        hardware_ver,
+        software_ver,
+        module_name,
+        dev_mac,
+        dev_ip,
+        dev_gateway_ip,
+        dev_ip_mask,
+        dhcp_enable,
+        reserved_1,
+        reserved_1a,
+        reserved_2,
+        reserved_3,
+        reserved_4,
+        reserved_5,
+        b_com_cfg_en,
+        reserved_6,
+    ) = struct.unpack(deserialization_format, device_hw_config)
 
-    hw_config = {'Device type': dev_type,
-                 'Device subtype': aux_dev_type,
-                 'Serial number': sn,
-                 'Hardware version': hardware_ver,
-                 'Software version': software_ver,
-                 'Module name' : module_name.decode().rstrip('\x00'),
-                 'Device MAC': dev_mac.hex(),
-                 'Device IP': str(ipaddress.IPv4Address(dev_ip)),
-                 'Device Gateway IP': str(ipaddress.IPv4Address(dev_gateway_ip)),
-                 'Device IP Mask': str(ipaddress.IPv4Address(dev_ip_mask)),
-                 'DHCP Enable': bool(dhcp_enable),
-                 'Serial port negotiation configuration enable': bool(b_com_cfg_en)
-                 }
-    
+    hw_config = {
+        "Device type": dev_type,
+        "Device subtype": aux_dev_type,
+        "Serial number": sn,
+        "Hardware version": hardware_ver,
+        "Software version": software_ver,
+        "Module name": module_name.decode().rstrip("\x00"),
+        "Device MAC": dev_mac.hex(),
+        "Device IP": str(ipaddress.IPv4Address(dev_ip)),
+        "Device Gateway IP": str(ipaddress.IPv4Address(dev_gateway_ip)),
+        "Device IP Mask": str(ipaddress.IPv4Address(dev_ip_mask)),
+        "DHCP Enable": bool(dhcp_enable),
+        "Serial port negotiation configuration enable": bool(b_com_cfg_en),
+    }
+
     # deserialize DEVICEPORT_CONFIG
     # note: ULONG is 4 bytes wide
     deserialization_format = "BBBBH4sHiBBBBiiBBB20s14s"
-    device_port_1_config_bytes = data_bytes[protocol.device_hw_config_size: protocol.device_hw_config_size + protocol.device_port_config_size]
-    device_port_2_config_bytes = data_bytes[protocol.device_hw_config_size + protocol.device_port_config_size
-                                            : protocol.device_hw_config_size + 2 * protocol.device_port_config_size]
+    device_port_1_config_bytes = data_bytes[
+        protocol.device_hw_config_size : protocol.device_hw_config_size
+        + protocol.device_port_config_size
+    ]
+    device_port_2_config_bytes = data_bytes[
+        protocol.device_hw_config_size
+        + protocol.device_port_config_size : protocol.device_hw_config_size
+        + 2 * protocol.device_port_config_size
+    ]
     """
     struct __attribute__((__packed__)) DEVICEPORT_CONFIG
     {
@@ -115,134 +159,239 @@ def deserialize_config(data_bytes):
         // 65
     };
     """
-    subdev_serial, port_en, netmode, random_local_port, local_port_number, dest_ip, dest_port,\
-        baud, data_size, stop_bits, parity, phy_handle, rx_packet_length, rx_timeout, reserved_1, reset_ctl,\
-        dns_flag, domain_name, reserved = struct.unpack(deserialization_format, device_port_1_config_bytes)
+    (
+        subdev_serial,
+        port_en,
+        netmode,
+        random_local_port,
+        local_port_number,
+        dest_ip,
+        dest_port,
+        baud,
+        data_size,
+        stop_bits,
+        parity,
+        phy_handle,
+        rx_packet_length,
+        rx_timeout,
+        reserved_1,
+        reset_ctl,
+        dns_flag,
+        domain_name,
+        reserved,
+    ) = struct.unpack(deserialization_format, device_port_1_config_bytes)
     port_1_cfg = {
-        'Port subdevice serial number': subdev_serial,
-        'Port Enable': bool(port_en),
-        'Netmode': netmode,
-        'Random local port enable': bool(random_local_port),
-        'Local port number': local_port_number,
-        'Destination IP': str(ipaddress.IPv4Address(dest_ip)),
-        'Destination port': dest_port,
-        'Baudrate': baud,
-        'Data size': data_size,
-        'Stop bits': stop_bits,
-        'Parity': parity,
-        'PHY Change Handle Enable': bool(phy_handle),
-        'RX Packet Max Length': rx_packet_length,
-        'RX Timeout': rx_timeout,
-        'Clear RX data buffer on connection enable': bool(reset_ctl),
-        'DNS Enable': bool(dns_flag),
-        'Domain name': domain_name.decode().rstrip('\x00')
+        "Port subdevice serial number": subdev_serial,
+        "Port Enable": bool(port_en),
+        "Netmode": netmode,
+        "Random local port enable": bool(random_local_port),
+        "Local port number": local_port_number,
+        "Destination IP": str(ipaddress.IPv4Address(dest_ip)),
+        "Destination port": dest_port,
+        "Baudrate": baud,
+        "Data size": data_size,
+        "Stop bits": stop_bits,
+        "Parity": parity,
+        "PHY Change Handle Enable": bool(phy_handle),
+        "RX Packet Max Length": rx_packet_length,
+        "RX Timeout": rx_timeout,
+        "Clear RX data buffer on connection enable": bool(reset_ctl),
+        "DNS Enable": bool(dns_flag),
+        "Domain name": domain_name.decode().rstrip("\x00"),
     }
-    subdev_serial, port_en, netmode, random_local_port, local_port_number, dest_ip, dest_port,\
-        baud, data_size, stop_bits, parity, phy_handle, rx_packet_length, rx_timeout, reserved_1, reset_ctl,\
-        dns_flag, domain_name, reserved= struct.unpack(deserialization_format, device_port_2_config_bytes)
+    (
+        subdev_serial,
+        port_en,
+        netmode,
+        random_local_port,
+        local_port_number,
+        dest_ip,
+        dest_port,
+        baud,
+        data_size,
+        stop_bits,
+        parity,
+        phy_handle,
+        rx_packet_length,
+        rx_timeout,
+        reserved_1,
+        reset_ctl,
+        dns_flag,
+        domain_name,
+        reserved,
+    ) = struct.unpack(deserialization_format, device_port_2_config_bytes)
 
     port_2_cfg = {
-        'Port subdevice serial number': subdev_serial,
-        'Port Enable': bool(port_en),
-        'Netmode': netmode,
-        'Random local port enable': bool(random_local_port),
-        'Local port number': local_port_number,
-        'Destination IP': str(ipaddress.IPv4Address(dest_ip)),
-        'Destination port': dest_port,
-        'Baudrate': baud,
-        'Data size': data_size,
-        'Stop bits': stop_bits,
-        'Parity': parity,
-        'PHY Change Handle Enable': bool(phy_handle),
-        'RX Packet Max Length': rx_packet_length,
-        'RX Timeout': rx_timeout,
-        'Clear RX data buffer on connection enable': bool(reset_ctl),
-        'DNS Enable': bool(dns_flag),
-        'Domain name': domain_name.decode().rstrip('\x00')
+        "Port subdevice serial number": subdev_serial,
+        "Port Enable": bool(port_en),
+        "Netmode": netmode,
+        "Random local port enable": bool(random_local_port),
+        "Local port number": local_port_number,
+        "Destination IP": str(ipaddress.IPv4Address(dest_ip)),
+        "Destination port": dest_port,
+        "Baudrate": baud,
+        "Data size": data_size,
+        "Stop bits": stop_bits,
+        "Parity": parity,
+        "PHY Change Handle Enable": bool(phy_handle),
+        "RX Packet Max Length": rx_packet_length,
+        "RX Timeout": rx_timeout,
+        "Clear RX data buffer on connection enable": bool(reset_ctl),
+        "DNS Enable": bool(dns_flag),
+        "Domain name": domain_name.decode().rstrip("\x00"),
     }
-    config = {'HW config': hw_config,
-              'Default port config': port_2_cfg,
-              'Auxiliary port config': port_1_cfg}
+    config = {
+        "HW config": hw_config,
+        "Default port config": port_2_cfg,
+        "Auxiliary port config": port_1_cfg,
+    }
     return config
+
 
 def serialize_config(config):
     # serialize DEVICEHW_CONFIG
-    
+
     # read_only parameters
-    hw_config = config['HW config']
-    dev_type = hw_config['Device type']
-    aux_dev_type = hw_config['Device subtype']
-    sn = hw_config['Serial number']
-    hardware_ver = hw_config['Hardware version']
-    software_ver = hw_config['Software version']
-    module_name = hw_config['Module name'].encode()
-    dev_mac = int(hw_config['Device MAC'], 16).to_bytes(6, byteorder='big')
-    dev_ip = int(ipaddress.IPv4Address(hw_config['Device IP'])).to_bytes(4, byteorder='big')
-    dev_gateway_ip = int(ipaddress.IPv4Address(hw_config['Device Gateway IP'])).to_bytes(4, byteorder='big')
-    dev_ip_mask = int(ipaddress.IPv4Address(hw_config['Device IP Mask'])).to_bytes(4, byteorder='big')
-    dhcp_enable = hw_config['DHCP Enable']
-    b_com_cfg_en = hw_config['Serial port negotiation configuration enable']
+    hw_config = config["HW config"]
+    dev_type = hw_config["Device type"]
+    aux_dev_type = hw_config["Device subtype"]
+    sn = hw_config["Serial number"]
+    hardware_ver = hw_config["Hardware version"]
+    software_ver = hw_config["Software version"]
+    module_name = hw_config["Module name"].encode()
+    dev_mac = int(hw_config["Device MAC"], 16).to_bytes(6, byteorder="big")
+    dev_ip = int(ipaddress.IPv4Address(hw_config["Device IP"])).to_bytes(
+        4, byteorder="big"
+    )
+    dev_gateway_ip = int(
+        ipaddress.IPv4Address(hw_config["Device Gateway IP"])
+    ).to_bytes(4, byteorder="big")
+    dev_ip_mask = int(ipaddress.IPv4Address(hw_config["Device IP Mask"])).to_bytes(
+        4, byteorder="big"
+    )
+    dhcp_enable = hw_config["DHCP Enable"]
+    b_com_cfg_en = hw_config["Serial port negotiation configuration enable"]
 
     reserved_1, reserved_1a, reserved_3, reserved_5 = [0 for _ in range(4)]
     reserved_2, reserved_4, reserved_6 = [bytes(0) for _ in range(3)]
 
-    serialization_format = 'BBBBB21s6s4s4s4sBBB8sB8sBB8s'
-    device_hw_config_data = struct.pack(serialization_format, dev_type, aux_dev_type, sn, hardware_ver, software_ver,\
-    module_name, dev_mac, dev_ip, dev_gateway_ip, dev_ip_mask,\
-    dhcp_enable, reserved_1, reserved_1a, reserved_2, reserved_3, reserved_4,\
-    reserved_5, b_com_cfg_en, reserved_6)
+    serialization_format = "BBBBB21s6s4s4s4sBBB8sB8sBB8s"
+    device_hw_config_data = struct.pack(
+        serialization_format,
+        dev_type,
+        aux_dev_type,
+        sn,
+        hardware_ver,
+        software_ver,
+        module_name,
+        dev_mac,
+        dev_ip,
+        dev_gateway_ip,
+        dev_ip_mask,
+        dhcp_enable,
+        reserved_1,
+        reserved_1a,
+        reserved_2,
+        reserved_3,
+        reserved_4,
+        reserved_5,
+        b_com_cfg_en,
+        reserved_6,
+    )
 
     # serialize DEVICEPORT_CONFIG
     # note: ULONG is 4 bytes wide
     serialization_format = "BBBBH4sHiBBBBiiBBB20s14s"
-    port_1_config = config['Auxiliary port config']
-    subdev_serial = port_1_config['Port subdevice serial number']
-    port_en = port_1_config['Port Enable']
-    netmode = port_1_config['Netmode']
-    random_local_port = port_1_config['Random local port enable']
-    local_port_number = port_1_config['Local port number']
-    dest_ip = int(ipaddress.IPv4Address(port_1_config['Destination IP'])).to_bytes(4, byteorder='big')
-    dest_port = port_1_config['Destination port']
-    baud = port_1_config['Baudrate']
-    data_size = port_1_config['Data size']
-    stop_bits = port_1_config['Stop bits']
-    parity = port_1_config['Parity']
-    phy_handle = port_1_config['PHY Change Handle Enable']
-    rx_packet_length = port_1_config['RX Packet Max Length']
-    rx_timeout = port_1_config['RX Timeout']
-    reset_ctl = port_1_config['Clear RX data buffer on connection enable']
-    dns_flag = port_1_config['DNS Enable']
-    domain_name = port_1_config['Domain name'].encode()
+    port_1_config = config["Auxiliary port config"]
+    subdev_serial = port_1_config["Port subdevice serial number"]
+    port_en = port_1_config["Port Enable"]
+    netmode = port_1_config["Netmode"]
+    random_local_port = port_1_config["Random local port enable"]
+    local_port_number = port_1_config["Local port number"]
+    dest_ip = int(ipaddress.IPv4Address(port_1_config["Destination IP"])).to_bytes(
+        4, byteorder="big"
+    )
+    dest_port = port_1_config["Destination port"]
+    baud = port_1_config["Baudrate"]
+    data_size = port_1_config["Data size"]
+    stop_bits = port_1_config["Stop bits"]
+    parity = port_1_config["Parity"]
+    phy_handle = port_1_config["PHY Change Handle Enable"]
+    rx_packet_length = port_1_config["RX Packet Max Length"]
+    rx_timeout = port_1_config["RX Timeout"]
+    reset_ctl = port_1_config["Clear RX data buffer on connection enable"]
+    dns_flag = port_1_config["DNS Enable"]
+    domain_name = port_1_config["Domain name"].encode()
     reserved = bytes(0)
 
-    port_1_config_data = struct.pack(serialization_format, subdev_serial, port_en, netmode, random_local_port, local_port_number, dest_ip, dest_port,\
-        baud, data_size, stop_bits, parity, phy_handle, rx_packet_length, rx_timeout, reserved_1, reset_ctl,\
-        dns_flag, domain_name, reserved)
+    port_1_config_data = struct.pack(
+        serialization_format,
+        subdev_serial,
+        port_en,
+        netmode,
+        random_local_port,
+        local_port_number,
+        dest_ip,
+        dest_port,
+        baud,
+        data_size,
+        stop_bits,
+        parity,
+        phy_handle,
+        rx_packet_length,
+        rx_timeout,
+        reserved_1,
+        reset_ctl,
+        dns_flag,
+        domain_name,
+        reserved,
+    )
 
-    port_2_config = config['Default port config']
-    subdev_serial = port_2_config['Port subdevice serial number']
-    port_en = port_2_config['Port Enable']
-    netmode = port_2_config['Netmode']
-    random_local_port = port_2_config['Random local port enable']
-    local_port_number = port_2_config['Local port number']
-    dest_ip = int(ipaddress.IPv4Address(port_2_config['Destination IP'])).to_bytes(4, byteorder='big')
-    dest_port = port_2_config['Destination port']
-    baud = port_2_config['Baudrate']
-    data_size = port_2_config['Data size']
-    stop_bits = port_2_config['Stop bits']
-    parity = port_2_config['Parity']
-    phy_handle = port_2_config['PHY Change Handle Enable']
-    rx_packet_length = port_2_config['RX Packet Max Length']
-    rx_timeout = port_2_config['RX Timeout']
-    reset_ctl = port_2_config['Clear RX data buffer on connection enable']
-    dns_flag = port_2_config['DNS Enable']
-    domain_name = port_2_config['Domain name'].encode()
+    port_2_config = config["Default port config"]
+    subdev_serial = port_2_config["Port subdevice serial number"]
+    port_en = port_2_config["Port Enable"]
+    netmode = port_2_config["Netmode"]
+    random_local_port = port_2_config["Random local port enable"]
+    local_port_number = port_2_config["Local port number"]
+    dest_ip = int(ipaddress.IPv4Address(port_2_config["Destination IP"])).to_bytes(
+        4, byteorder="big"
+    )
+    dest_port = port_2_config["Destination port"]
+    baud = port_2_config["Baudrate"]
+    data_size = port_2_config["Data size"]
+    stop_bits = port_2_config["Stop bits"]
+    parity = port_2_config["Parity"]
+    phy_handle = port_2_config["PHY Change Handle Enable"]
+    rx_packet_length = port_2_config["RX Packet Max Length"]
+    rx_timeout = port_2_config["RX Timeout"]
+    reset_ctl = port_2_config["Clear RX data buffer on connection enable"]
+    dns_flag = port_2_config["DNS Enable"]
+    domain_name = port_2_config["Domain name"].encode()
     reserved = bytes(0)
 
-    port_2_config_data = struct.pack(serialization_format, subdev_serial, port_en, netmode, random_local_port, local_port_number, dest_ip, dest_port,\
-        baud, data_size, stop_bits, parity, phy_handle, rx_packet_length, rx_timeout, reserved_1, reset_ctl,\
-        dns_flag, domain_name, reserved)
-    
+    port_2_config_data = struct.pack(
+        serialization_format,
+        subdev_serial,
+        port_en,
+        netmode,
+        random_local_port,
+        local_port_number,
+        dest_ip,
+        dest_port,
+        baud,
+        data_size,
+        stop_bits,
+        parity,
+        phy_handle,
+        rx_packet_length,
+        rx_timeout,
+        reserved_1,
+        reset_ctl,
+        dns_flag,
+        domain_name,
+        reserved,
+    )
+
     message_payload = device_hw_config_data + port_1_config_data + port_2_config_data
 
     return message_payload
