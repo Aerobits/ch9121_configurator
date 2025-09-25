@@ -131,7 +131,7 @@ def check_IP():
     ]
 
     window = sg.Window("Sprawdzanie dostępności IP", layout, finalize=True)
-    window["IP_CHOICE"].update("192.168.1.240")
+    window["IP_CHOICE"].update("192.168.1.15")
 
     while True:
         window["IP"].update("192.168.1.")
