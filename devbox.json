@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.15.0/.schema/devbox.schema.json",
+  "packages": [
+    "pkgconf@latest",
+    "python@3.10.12",
+    "tzdata@2025b",
+    "udev@252.5",
+    "python310Packages.netifaces@0.11.0",
+    "python310Packages.pyyaml@6.0.1",
+    "python310Packages.pysimplegui@4.60.5",
+    "python310Packages.psutil@5.9.6",
+    "python310Packages.tkinter@3.10.12",
+    "ruff@0.12.10"
+  ],
+  "shell": {
+    "init_hook": [
+      "echo 'Welcome to devbox!' > /dev/null"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}

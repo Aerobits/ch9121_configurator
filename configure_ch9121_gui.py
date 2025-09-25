@@ -172,7 +172,7 @@ def get_configuration_ch9121(interface, ch9121_mac):
     with open("ch9121_get_conf.txt", "r", encoding="utf-8") as f:
         content = f.read()
 
-    # print(content)
+    print(content)
 
 def prepare_drs_conf(drs_ip, drs_mac, drs_name):
     content = None
