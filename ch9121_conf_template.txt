@@ -1,0 +1,49 @@
+HW config:
+  DHCP Enable: false
+  Device Gateway IP: 192.168.1.1
+  Device IP: DRS_IP
+  Device IP Mask: 255.255.255.0
+  Device MAC: DRS_MAC
+  Device subtype: 33
+  Device type: 33
+  Hardware version: 2
+  Module name: DRS_NAME
+  Serial number: 1
+  Serial port negotiation configuration enable: false
+  Software version: 6
+Default port config:
+  Baudrate: 115200
+  Clear RX data buffer on connection enable: false
+  DNS Enable: false
+  Data size: 8
+  Destination IP: 192.168.1.100
+  Destination port: 1000
+  Domain name: ''
+  Local port number: 2000
+  Netmode: 0
+  PHY Change Handle Enable: true
+  Parity: 4
+  Port Enable: true
+  Port subdevice serial number: 1
+  RX Packet Max Length: 1024
+  RX Timeout: 0
+  Random local port enable: true
+  Stop bits: 1
+Auxiliary port config:
+  Baudrate: 9600
+  Clear RX data buffer on connection enable: false
+  DNS Enable: false
+  Data size: 8
+  Destination IP: 192.168.1.100
+  Destination port: 2000
+  Domain name: ''
+  Local port number: 3000
+  Netmode: 1
+  PHY Change Handle Enable: true
+  Parity: 4
+  Port Enable: false
+  Port subdevice serial number: 0
+  RX Packet Max Length: 1024
+  RX Timeout: 0
+  Random local port enable: true
+  Stop bits: 1

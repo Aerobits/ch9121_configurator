@@ -2,10 +2,28 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Lint",
+            "label": "Ruff check and format",
             "type": "shell",
-            "command": "python3 -m ruff check",
+            "command": "uv run ruff check .",
             "problemMatcher": []
-        }
+        },
+        {
+            "label": "CH9121 Factory restet (with GUI)",
+            "type": "shell",
+            "command": "python configure_ch9121_gui.py -r",
+            "problemMatcher": []
+        },
+        {
+            "label": "CH9121 Set configuration (with GUI)",
+            "type": "shell",
+            "command": "python configure_ch9121_gui.py -s",
+            "problemMatcher": []
+        },
+                {
+            "label": "CH9121 Get configuration (with GUI)",
+            "type": "shell",
+            "command": "python configure_ch9121_gui.py -g",
+            "problemMatcher": []
+        },
     ]
 }
