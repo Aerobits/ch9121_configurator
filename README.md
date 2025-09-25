@@ -9,11 +9,12 @@ sends replies to broadcast address to port 60000.
 
 ## Usage of GUI
 
-Just run predefined tasks in VsCode.
-`Ctrl+Shift+P` --> ``Run Task``
-``CH9121 Set configuration (with GUI)``
-or
-``CH9121 Get configuration (with GUI)``
+## Usage GUI
+
+GUI not work on UV (due to Tcl/Tk)
+If you want use GUI install ``python3 -m pip install -r gui_requirements.txt``
+In VS-Code task you find predefined tasks.
+`Ctrl+Shift+P` --> ``Run Task`` --> eg. ``CH9121 Set configuration (with GUI)``
 
 ## Usage (without gui)
 

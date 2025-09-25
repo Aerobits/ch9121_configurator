@@ -4,5 +4,3 @@
 
 - ADD: changelog
 - ADD: GUI interface
-- CHANGE: transition from UV to devbox
-

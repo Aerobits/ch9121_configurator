@@ -4,25 +4,25 @@
         {
             "label": "Ruff check",
             "type": "shell",
-            "command": "devbox run 'ruff check .'",
+            "command": "uv run ruff check .",
             "problemMatcher": []
         },
         {
             "label": "Ruff format",
             "type": "shell",
-            "command": "devbox run 'ruff format'",
+            "command": "uv run ruff format .",
             "problemMatcher": []
         },
         {
             "label": "CH9121 Set configuration (with GUI)",
             "type": "shell",
-            "command": "devbox run 'python3 configure_ch9121_gui.py -s'",
+            "command": "python3 configure_ch9121_gui.py -s",
             "problemMatcher": []
         },
                 {
             "label": "CH9121 Get configuration (with GUI)",
             "type": "shell",
-            "command": "devbox run 'python3 configure_ch9121_gui.py -g'",
+            "command": "python3 configure_ch9121_gui.py -g",
             "problemMatcher": []
         },
     ]
