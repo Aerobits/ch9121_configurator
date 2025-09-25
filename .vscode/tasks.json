@@ -14,15 +14,15 @@
             "problemMatcher": []
         },
         {
-            "label": "CH9121 Set configuration (with GUI)",
+            "label": "CH9121 Set configuration",
             "type": "shell",
-            "command": "python3 configure_ch9121_gui.py -s",
+            "command": "uv run configure_ch9121_gui.py -s",
             "problemMatcher": []
         },
-                {
-            "label": "CH9121 Get configuration (with GUI)",
+        {
+            "label": "CH9121 Get configuration",
             "type": "shell",
-            "command": "python3 configure_ch9121_gui.py -g",
+            "command": "uv run configure_ch9121_gui.py -g",
             "problemMatcher": []
         },
     ]

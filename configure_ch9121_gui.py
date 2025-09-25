@@ -1,13 +1,15 @@
+import sys
+import os
+import platform
+import questionary
 import argparse
 import subprocess
-import platform
 import re
-import sys
+import psutil
 
 from time import sleep
 
-import psutil
-import PySimpleGUI as sg
+# ----------------------------------------------------------------------------- #
 
 parser = argparse.ArgumentParser(
     prog="CH9121 Programmer",
@@ -37,20 +39,58 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+
 if not (args.get or args.reset or args.set):
     parser.print_help()
     sys.exit()
 
+# ----------------------------------------------------------------------------- #
 
-def ping_ip(ip_address):
-    """Checking IP - PING"""
+
+def clear_screen():
+    """Czyści ekran w CMD"""
+    os.system("cls" if platform.system().lower() == "windows" else "clear")
+
+
+def validate_ip_input(ip: str) -> bool:
+    """Sprawdza poprawność IP (bez 0, zakres 1–255, brak pustych oktetów)"""
+    parts = ip.strip().split(".")
+    if len(parts) != 4:
+        return False
+    for part in parts:
+        if not part.isdigit():
+            return False
+        num = int(part)
+        if num <= 0 or num > 255:
+            return False
+    return True
+
+
+def ping_ip(ip_address: str) -> bool:
+    """Sprawdza zajętość IP (return True jeśli wolny, False jeśli zajęty)"""
     param = "-n" if platform.system().lower() == "windows" else "-c"
     result = subprocess.run(
-        ["ping", param, "1", ip_address], capture_output=True, text=True, check=False
+        ["ping", param, "1", ip_address],
+        capture_output=True,
+        text=True,
+        check=False,
     )
-    # print(result)
-    # returncode = 0 gdy IP zajęty, != 0 kiedy wolny
+    # returncode == 0 → IP odpowiada → zajęty
     return result.returncode != 0
+
+
+def terminal_choice_list(items: list, text: str):
+    """Function to show a list in terminal and let user choose with arrows"""
+    if not items:
+        print("Brak elementów do wyboru.")
+        sys.exit(1)
+
+    selected_item = questionary.select(text, choices=items, qmark="▶").ask()
+
+    if selected_item is None:
+        sys.exit()
+
+    return selected_item
 
 
 def extract_numbered_items(text):
@@ -72,40 +112,16 @@ def list_drs():
     return drs
 
 
-def gui_choice_list(items: list, text: str):
-    """Metod to show GUI list"""
-    layout = [
-        [sg.Text(text)],
-        [sg.Listbox(items, size=(30, len(items)), key="ITEMS")],
-        [sg.Button("OK"), sg.Button("Anuluj")],
-    ]
-
-    window = sg.Window("Wybierz z listy", layout)
-
-    while True:
-        event, values = window.read()
-        if event in (sg.WIN_CLOSED, "Anuluj"):
-            # selected_item = None
-            # break
-            sys.exit()
-        if event == "OK" and values["ITEMS"]:
-            selected_item = values["ITEMS"][0]
-            break
-
-    window.close()
-    return selected_item
-
-
 def show_interface_selection():
     """Network Interface selection"""
     interfaces = list_network_interfaces()
-    selected_interface = gui_choice_list(interfaces, "Wybierz kartę sieciową:")
+    selected_interface = terminal_choice_list(interfaces, "Wybierz kartę sieciową:")
     return selected_interface
 
 
 def show_drs_selection():
     """DRS selection"""
-    selected_drs = gui_choice_list(list_drs(), "Wybierz DRS-a:")
+    selected_drs = terminal_choice_list(list_drs(), "Wybierz DRS-a:")
     return selected_drs
 
 
@@ -118,77 +134,76 @@ def find_ch9121(interface):
         exit(1)
 
     lista = extract_numbered_items(result.stdout)
-    ch9121 = gui_choice_list(lista, "Wybierz urządzenie:")
+    ch9121 = terminal_choice_list(lista, "Wybierz urządzenie [MAC]:")
 
     return ch9121
 
 
-def validate_ip_input(ip: str):
-    # validate IP
-    ipParts = str(ip).split(".")
-    isOK = True
+def check_IP_cmd():
+    base_ip = "192.168.1."
+    chosen_ip = None
+    ip_validate_info = ""
+    ip_is_free = False
+    ip_input = ""
 
-    if len(ipParts) == 4:
-        for i in ipParts:
-            isOK = len(i) >= 1 and len(i) <= 3
-            try:
-                i = int(i)
-                if i == 0:
-                    isOK = False
-            except ValueError:
-                isOK = False
-
-            if isOK is False:
-                break
+    print("=== Sprawdzanie zajętości adresu IP ===")
+    print("")
+    ip_input = input(f"Wpisz adres IP: {base_ip}").strip()
+    ip = base_ip + ip_input if ip_input else ""
+    if not validate_ip_input(ip):
+        ip_validate_info = f"⚠️ Niepoprawny format adresu IP: {ip}"
+        ip_is_free = None
     else:
-        isOK = False
-
-    return isOK
-
-
-def check_IP():
-    """Check if IP is not occupied"""
-    # Definicja interfejsu graficznego
-    ip = None
-    layout = [
-        [sg.Text("Wprowadź adres IP:")],
-        [sg.Input(size=(30, 1), key="IP"), sg.Button("Sprawdź")],
-        [sg.Text("", size=(30, 1), key="OUTPUT")],
-        [sg.Text("Wybrany adres IP: ")],
-        [sg.Input(size=(30, 1), key="IP_CHOICE"), sg.Button("Potwierdź")],
-    ]
-
-    window = sg.Window("Sprawdzanie dostępności IP", layout, finalize=True)
-    window["IP_CHOICE"].update("192.168.1.15")
+        # Sprawdzamy czy IP jest wolny
+        ip_is_free = ping_ip(ip)
+        status = "✅ wolny" if ip_is_free else "❌ zajęty"
+        ip_validate_info = f"Adres IP {ip} jest {status}"
 
     while True:
-        window["IP"].update("192.168.1.")
-        event, values = window.read()
-        if event == sg.WINDOW_CLOSED:
-            sys.exit()
-        if event == "Potwierdź":
-            if validate_ip_input(values["IP_CHOICE"].strip()):
-                break
-            else:
-                window["OUTPUT"].update("Wprowadź poprawny adres IP")
-        if event == "Sprawdź":
-            ip = values["IP"].strip()
-
-            if ip and validate_ip_input(ip):
-                is_free = ping_ip(ip)
-                message = (
-                    f"Adres IP {ip} jest wolny"
-                    if is_free
-                    else f"Adres IP {ip} jest zajęty"
+        clear_screen()
+        print("=== Sprawdzanie zajętości adresu IP ===")
+        print(ip_validate_info)
+        if ip_is_free is not None:
+            ip_input = (
+                input(
+                    f"Zatwierdź {ip} [y/yes] lub Wpisz nowy adres IP: {base_ip}[1-255] "
                 )
-                window["OUTPUT"].update(message)
-                message = f"{ip}"
-                window["IP_CHOICE"].update(message)
-            else:
-                window["OUTPUT"].update("Wprowadź poprawny adres IP")
+                .strip()
+                .lower()
+            )
 
-    window.close()
-    return values["IP_CHOICE"].strip()
+            if ip_input in ("y", "yes"):
+                if not ip_is_free:
+                    # dodatkowe potwierdzenie jeśli IP zajęty
+                    override = (
+                        input(
+                            "Adres IP jest już zajęty, czy na pewno chcesz użyć tego adresu? [y/n]: "
+                        )
+                        .strip()
+                        .lower()
+                    )
+                    if override not in ("y", "yes"):
+                        continue
+                chosen_ip = ip
+                break
+        else:
+            ip_input = input(f"Wpisz adres IP: {base_ip}").strip()
+
+        ip = base_ip + ip_input if ip_input else ""
+
+        if not validate_ip_input(ip):
+            ip_validate_info = f"⚠️ Niepoprawny format adresu IP: {ip}"
+            ip_is_free = None
+        else:
+            # Sprawdzamy czy IP jest wolny
+            ip_is_free = ping_ip(ip)
+            status = "✅ wolny" if ip_is_free else "❌ zajęty"
+            ip_validate_info = f"Adres IP {ip} jest {status}"
+
+    clear_screen()
+    print("=== Sprawdzanie zajętości adresu IP ===")
+    print(f"✔️  Wybrany adres IP: {chosen_ip}")
+    return chosen_ip
 
 
 def get_configuration_ch9121(interface, ch9121_mac):
@@ -212,7 +227,7 @@ def get_configuration_ch9121(interface, ch9121_mac):
     with open("ch9121_get_conf.txt", "r", encoding="utf-8") as f:
         content = f.read()
 
-    print(content)
+    print("\n" + content)
 
 
 def prepare_drs_conf(drs_ip, drs_mac, drs_name):
@@ -280,45 +295,38 @@ def compare_files(file1: str, file2: str) -> bool:
 
 
 if __name__ == "__main__":
+    clear_screen()
     if args.set:
-        ip = check_IP()
-        print("DRS IP: " + ip)
+        ip = check_IP_cmd()
         interface = show_interface_selection()
         ch9121_mac = find_ch9121(interface)
-        print("DRS MAC: " + ch9121_mac)
         drs_name = show_drs_selection()
+
+        print("")
+        print("DRS IP: " + ip)
+        print("DRS MAC: " + ch9121_mac)
         print("DRS name: " + drs_name)
         prepare_drs_conf(ip, ch9121_mac, drs_name)
         set_configuration_ch9121(interface, ch9121_mac)
         sleep(2)
         get_configuration_ch9121(interface, ch9121_mac)
         compare_files("ch9121_conf_to_set.txt", "ch9121_get_conf.txt")
-        sg.popup(
-            "\nSET configuration DONE\n",
-            title="Info",
-            font=("Arial", 14),
-            keep_on_top=True,
-        )
+        print("\nSET configuration DONE\n")
 
     if args.get:
         interface = show_interface_selection()
         ch9121_mac = find_ch9121(interface)
-        print("DRS MAC: " + ch9121_mac)
+        print("\nDRS MAC: " + ch9121_mac)
         get_configuration_ch9121(interface, ch9121_mac)
-        sg.popup(
-            "\nGET configuration DONE\n",
-            title="Info",
-            font=("Arial", 14),
-            keep_on_top=True,
-        )
+        print("\nGET configuration DONE\n")
 
-    if args.reset:
-        interface = show_interface_selection()
-        ch9121_mac = find_ch9121(interface)
-        print("DRS MAC: " + ch9121_mac)
-        factory_reset_ch9121(interface, ch9121_mac)
-        sleep(2)
-        get_configuration_ch9121(interface, ch9121_mac)
-        sg.popup(
-            "\nFactory reset DONE\n", title="Info", font=("Arial", 14), keep_on_top=True
-        )
+    # if args.reset:
+    #     # warning - after factory reset DRS has 192.168.1.200 IP
+    #     #  and it is collision with our network!
+    #     interface = show_interface_selection()
+    #     ch9121_mac = find_ch9121(interface)
+    #     print("\nDRS MAC: " + ch9121_mac)
+    #     factory_reset_ch9121(interface, ch9121_mac)
+    #     sleep(2)
+    #     get_configuration_ch9121(interface, ch9121_mac)
+    #     print("\nFactory reset DONE configuration DONE\n")

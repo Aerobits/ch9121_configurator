@@ -3,10 +3,14 @@ name = "ch9121-configurator"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = "~=3.10"
+requires-python = "==3.10.15"
 dependencies = [
     "netifaces>=0.11.0",
     "pyyaml>=6.0.2",
+    "psutil",
+    "pysimplegui-4-foss",
+    "tk>=0.1.0",
+    "questionary>=2.1.1",
 ]
 
 [dependency-groups]
