@@ -35,7 +35,7 @@ def ping_ip(ip_address):
     return result.returncode != 0
  
 def extract_numbered_items(text):
-    '''aaa'''
+    '''extract items'''
     pattern = r'\d+\.\s*(\S+)'
     matches = re.findall(pattern, text)
     return matches
@@ -85,9 +85,9 @@ def show_drs_selection():
 def find_ch9121(interface):
     '''Searching CH9121'''
     command = ["python", "ch9121.py", "-f", "-i", interface]
-    result = subprocess.run(command, capture_output=True, text=True)
+    result = subprocess.run(command, capture_output=True, text=True, check=False)
     if "No devices found" in result.stdout:
-        print("Nie wykryto żadnego urządzenia ch9121!")
+        print("\nNie wykryto żadnego urządzenia ch9121!")
         exit(1)
 
     lista = extract_numbered_items(result.stdout)
@@ -99,7 +99,7 @@ def validate_ip_input(ip:str):
     # validate IP
     ipParts = str(ip).split(".")
     isOK = True
-        
+
     if len(ipParts)==4:
         for i in ipParts:
             isOK = len(i)>=1 and len(i)<=3
@@ -163,12 +163,10 @@ def get_configuration_ch9121(interface, ch9121_mac):
 
     print("\nGetting configuration...")
     command = ["python", "ch9121.py", "-g", "ch9121_get_conf.txt", "-i", interface, "-m", ch9121_mac]
-    result = subprocess.run(command, capture_output=True, text=True)
-    if result.returncode != 0:
-        raise RuntimeError("\nBłąd subprocesu!!!\n")
+    subprocess.run(command, capture_output=True, text=True, check=True)
+    sleep(2)
     print("Done")
 
-    sleep(2)
     with open("ch9121_get_conf.txt", "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -188,16 +186,14 @@ def prepare_drs_conf(drs_ip, drs_mac, drs_name):
 
     with open("ch9121_conf_to_set.txt", "w", encoding="utf-8") as f:
         f.write(content)
-    sleep(5)
+    sleep(2)
 
 def set_configuration_ch9121(interface, ch9121_mac):
     '''Set configuration from CH9121'''
 
     print("\nSetting configuration...")
     command = ["python", "ch9121.py", "-s", "ch9121_conf_to_set.txt", "-i", interface, "-m", ch9121_mac]
-    result = subprocess.run(command, input="y", capture_output=True, text=True, check=True)
-    if result.returncode != 0:
-        raise RuntimeError("\nSubprocess Error!!!\n")
+    subprocess.run(command, input="y", capture_output=True, text=True, check=True)
     print("Done")
     
 def factory_reset_ch9121(interface, ch9121_mac):
@@ -205,11 +201,8 @@ def factory_reset_ch9121(interface, ch9121_mac):
 
     print("Setting factory reset...")
     command = ["python", "ch9121.py", "-r", "-i", interface, "-m", ch9121_mac]
-    result = subprocess.run(command, input="y", capture_output=True, text=True, check=True)
-    if result.returncode != 0:
-        raise RuntimeError("\nSubprocess Error!!!\n")
+    subprocess.run(command, input="y", capture_output=True, text=True, check=True)
     print("Done")
-
 
 def compare_files(file1: str, file2: str) -> bool:
     """Compare two txt files"""
@@ -217,11 +210,8 @@ def compare_files(file1: str, file2: str) -> bool:
     print("\nChecking if the configuration was successfully uploaded...")
 
     filesOK = None
-    try:
-        with open(file1, "r", encoding="utf-8") as f1, open(file2, "r", encoding="utf-8") as f2:
-            filesOK = f1.read() == f2.read()
-    except FileNotFoundError:
-        raise FileNotFoundError("File not found!")
+    with open(file1, "r", encoding="utf-8") as f1, open(file2, "r", encoding="utf-8") as f2:
+        filesOK = f1.read() == f2.read()
     
     if filesOK is False:
         raise RuntimeError("\nNiepowodzenie - konfiguracja pobrana a wysłana nie są zgodne!\n")
@@ -244,14 +234,14 @@ if __name__ == "__main__":
         sleep(2)
         get_configuration_ch9121(interface, ch9121_mac)
         compare_files("ch9121_conf_to_set.txt", "ch9121_get_conf.txt")
-        sg.popup("\nDONE\n", title="Info", font=("Arial", 14), keep_on_top=True)
+        sg.popup("\nSET configuration DONE\n", title="Info", font=("Arial", 14), keep_on_top=True)
 
     if args.get:
         interface = show_interface_selection()
         ch9121_mac = find_ch9121(interface)
         print("DRS MAC: " + ch9121_mac)
         get_configuration_ch9121(interface, ch9121_mac)
-        sg.popup("\nDONE\n", title="Info", font=("Arial", 14), keep_on_top=True)
+        sg.popup("\nGET configuration DONE\n", title="Info", font=("Arial", 14), keep_on_top=True)
 
     if args.reset:
         interface = show_interface_selection()
