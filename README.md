@@ -7,7 +7,14 @@ Mini python program to set & get CH9121 chip parameters.
 CH9121 receives configuration on broadcast address on port 50000 and
 sends replies to broadcast address to port 60000.
 
-## Usage
+## Usage of GUI
+
+## Usage CMD user friendly interface
+
+In VS-Code task you find predefined tasks.
+`Ctrl+Shift+P` --> ``Run Task`` --> ``CH9121 Set configuration`` or ``CH9121 Get configuration``
+
+## Usage (cmd - dev)
 
 ```cmd
 $ python ch9121.py --help
@@ -62,7 +69,7 @@ modified, and then reprogrammed.
 HW config:
   DHCP Enable: false
   Device Gateway IP: 192.168.1.1
-  Device IP: 192.168.1.200
+  Device IP: 192.168.1.15
   Device IP Mask: 255.255.255.0
   Device MAC: 50547bb50e55 
   Device subtype: 33
@@ -73,7 +80,7 @@ HW config:
   Serial port negotiation configuration enable: false
   Software version: 6
 Default port config:
-  Baudrate: 9600
+  Baudrate: 115200
   Clear RX data buffer on connection enable: false
   DNS Enable: false
   Data size: 8
@@ -81,7 +88,7 @@ Default port config:
   Destination port: 1000
   Domain name: ""
   Local port number: 2000
-  Netmode: 1
+  Netmode: 0
   PHY Change Handle Enable: true
   Parity: 4
   Port Enable: true
@@ -99,7 +106,7 @@ Auxiliary port config:
   Destination port: 2000
   Domain name: ""
   Local port number: 3000
-  Netmode: 2
+  Netmode: 1
   PHY Change Handle Enable: true
   Parity: 4
   Port Enable: false
@@ -109,3 +116,20 @@ Auxiliary port config:
   Random local port enable: true
   Stop bits: 1
 ```
+
+--------------------------------------------------
+
+## IMPORTANT INFO
+
+### WHAT WE NEED TO SET
+
+- Device IP
+- Module name
+- Default port config - baudrate: 115200
+- Default port config - Local port number: 2000
+- Default port config - Netmode: 0
+
+### Factory reset
+
+It is possible to restore the device to factory settings.
+But in default CH9121 has a set address to **192.168.1.240** and it is **collision in our LAN**. Change it quickly or use VLAN or other separate network.
